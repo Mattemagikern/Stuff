@@ -64,6 +64,7 @@ def main():
                         print "in error"
                         raise ValueError
                     make_move(player, moves[move], playground)
+                    print_othello()
                     break
                 except ValueError:
                     print("Invalid move")

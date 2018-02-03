@@ -1,6 +1,7 @@
 import sys
 from copy import copy, deepcopy
 import time
+import random as r
 
 #{{{  Setup for the Othello board
 playground = [[0 for i in range(8)] for j in range(8)]
@@ -11,6 +12,7 @@ playground[3][3] = 1
 #}}}
 human = 0
 computer = 0
+t = 0
 
 #white == 1 black == 2
 #{{{
@@ -28,7 +30,8 @@ def main():
         print("Invalid number")
         sys.exit(1)
     player = 2 
-
+    global t
+    t = int(raw_input("Choose a time limit: "))
     while(True):
         moves = find_legal_moves(playground, player)
         if len(moves) == 0:
@@ -44,6 +47,10 @@ def main():
                 continue
 
         if player == human:
+            """
+            m = r.choice(moves)
+            make_move(player, m, playground)
+            """
             print_othello()
             print "------------------"
             while(True):
@@ -62,7 +69,8 @@ def main():
                     print("Invalid move")
         else:
             if len(moves) != 0:
-                move = alpha_beta(player, playground, -1000, 1000, 5)[1]
+                move = alpha_beta(player, playground, -1000, 1000, 7,
+                        time.time() + t)[1]
                 make_move(player, move, playground)
         player = (player % 2) + 1
 
@@ -104,9 +112,9 @@ def simulate_game(moves, player):
     return max(what_move, key=what_move.get)
 #}}}
 #{{{
-def alpha_beta(player, board, alpha, beta, depth):
+def alpha_beta(player, board, alpha, beta, depth, t):
     moves = find_legal_moves(board, player) 
-    if depth == 0 or len(moves) == 0:#omg we found a leaf
+    if depth == 0 or len(moves) == 0 or time.time() >= t:#omg we found a leaf
         if points(board,human) == 0:
             return [float(points(board, computer)), "temp"]
         return [float(points(board, computer)) / points(board, human),"temp"]
@@ -117,7 +125,7 @@ def alpha_beta(player, board, alpha, beta, depth):
             temp_board = deepcopy(board)
             make_move(player, m, temp_board)
             res = alpha_beta(player % 2 + 1, temp_board, alpha, beta,
-                    depth-1)
+                    depth-1, t)
             if v[0] > res[0]:
                 v = res
                 v[1] = m
@@ -130,7 +138,7 @@ def alpha_beta(player, board, alpha, beta, depth):
             temp_board = deepcopy(board) 
             make_move(player, m, temp_board)
             res = alpha_beta(player % 2 + 1, temp_board, alpha, beta,
-                    depth-1)
+                    depth-1, t)
             if v[0] < res[0]:
                 v = res
                 v[1] = m
@@ -164,7 +172,6 @@ def out_flank(board, x, y, player):
                         if ( 8 > x + i * dir[0] > -1) and (8 > y + i* dir[1] > -1):
                             if board[x + i * dir[0]][y + i * dir[1]] == player:
                                 legal.append(dir)
-                                break
     return legal
 
 #if there is no legal moves, exit and tell the results
@@ -193,11 +200,6 @@ def print_othello():
     for i in range(8):
         print str(i) + " " + str(playground[i])
 
-def print_board(board):
-    print "   0  1  2  3  4  5  6  7 "
-    for i in range(8):
-        print str(i) + " " + str(board[i])
-
 def reset():
     global playground
     playground = [[0 for i in range(8)] for j in range(8)]
@@ -213,13 +215,14 @@ def reset():
 def make_move(player, move, board): 
     x = move[0][0]
     y = move[0][1]
-    dx = move[1][0][0]
-    dy = move[1][0][1]
-    for i in range(8):
-        if(board[x + i * dx][y + i * dy] != player):
-            board[x + i * dx][y + i * dy] = player
-        else:
-            break;
+    for dx_dy in move[1]:
+        dx = dx_dy[0]
+        dy = dx_dy[1]
+        for i in range(8):
+            if(board[x + i * dx][y + i * dy] != player):
+                board[x + i * dx][y + i * dy] = player
+            else:
+                break;
 
 def points(board, player):
     result = 0

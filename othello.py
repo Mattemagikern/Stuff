@@ -48,8 +48,10 @@ def main():
 
         if player == human:
             """
-            m = r.choice(moves)
-            make_move(player, m, playground)
+            if len(moves) != 0:
+                move = alpha_beta(player, playground, -1000, 1000, 7,
+                        time.time() + t)[1]
+                make_move(player, move, playground)
             """
             print_othello()
             print "------------------"
@@ -74,42 +76,6 @@ def main():
                 make_move(player, move, playground)
         player = (player % 2) + 1
 
-#}}}
-#{{{ stuff
-""" WIP - not to be implemented.
-simulates a game depending on the moves aviable and returns the move that
-provided the most wins
-"""
-def simulate_game(moves, player):
-    global playground
-    what_move = {}
-
-    for m in moves: what_move[m] = 0
-
-    for move in moves:
-        board = deepcopy(playground)
-        white = 0;
-        black = 0;
-        make_move(move,board=board)
-        #runs a random game. 
-        for i in range(10):
-            for i in range(64):
-                player = i%2+1
-                #print "---------------Player " + str(i%2+1) + "-----------------"
-                moves = find_legal_moves(board, player)
-                if len(moves) == 0:
-                    moves2 = find_legal_moves(board, player%2+1)
-                    if len(moves2) == 0:
-                        print " " 
-                        res = check_result(moves)
-                        if(res == player):
-                            what_move[move] +=1;
-                        break;
-                else:
-                    move = r.choice(moves) # create better choice algorithm.
-                    make_move(i%2+1,move)
-
-    return max(what_move, key=what_move.get)
 #}}}
 #{{{
 def alpha_beta(player, board, alpha, beta, depth, t):
@@ -148,7 +114,6 @@ def alpha_beta(player, board, alpha, beta, depth, t):
     return v
 #}}}
 #{{{ Finding legal moves
-
 #returns a list of legual moves positioned as ((x,y),[dirs])
 def find_legal_moves(board, player):
     legal_moves = []
@@ -158,6 +123,7 @@ def find_legal_moves(board, player):
             legal_dir = out_flank(board, i, j, player)
             if len(legal_dir) != 0:
                 legal_moves.append(((i, j),legal_dir))
+
     return legal_moves
 
 def out_flank(board, x, y, player):
@@ -192,13 +158,32 @@ def check_result(legal_moves, final = False):
                 print_othello() 
         return 1 if white > black else 2
     return 0
+
+
+##Flips the tiles given a move((x,y), (dx,dy)).
+def make_move(player, move, board): 
+    x = move[0][0]
+    y = move[0][1]
+    board[x][y] = player
+    for dx_dy in move[1]:
+        dx = dx_dy[0]
+        dy = dx_dy[1]
+        for i in range(1,8):
+            if(board[x + i * dx][y + i * dy] != player):
+                board[x + i * dx][y + i * dy] = player
+            else:
+                break
 #}}}
 
 #{{{ utiity
 def print_othello():
-    print "   0  1  2  3  4  5  6  7 "
+    print "    0 1 2 3 4 5 6 7 "
+    print "--------------------"
     for i in range(8):
-        print str(i) + " " + str(playground[i])
+        print i, "|",
+        for j in range(8):
+            print str(playground[j][i]),
+        print
 
 def reset():
     global playground
@@ -208,21 +193,6 @@ def reset():
     playground[3][4] = 2
     playground[3][3] = 1
 
-
-
-
-##Flips the tiles given a move((x,y), (dx,dy)).
-def make_move(player, move, board): 
-    x = move[0][0]
-    y = move[0][1]
-    for dx_dy in move[1]:
-        dx = dx_dy[0]
-        dy = dx_dy[1]
-        for i in range(8):
-            if(board[x + i * dx][y + i * dy] != player):
-                board[x + i * dx][y + i * dy] = player
-            else:
-                break;
 
 def points(board, player):
     result = 0
@@ -236,3 +206,41 @@ def points(board, player):
 
 if __name__ == '__main__':
     main()
+
+
+#{{{ stuff
+""" WIP - not to be implemented.
+simulates a game depending on the moves aviable and returns the move that
+provided the most wins
+"""
+def simulate_game(moves, player):
+    global playground
+    what_move = {}
+
+    for m in moves: what_move[m] = 0
+
+    for move in moves:
+        board = deepcopy(playground)
+        white = 0;
+        black = 0;
+        make_move(move,board=board)
+        #runs a random game. 
+        for i in range(10):
+            for i in range(64):
+                player = i%2+1
+                #print "---------------Player " + str(i%2+1) + "-----------------"
+                moves = find_legal_moves(board, player)
+                if len(moves) == 0:
+                    moves2 = find_legal_moves(board, player%2+1)
+                    if len(moves2) == 0:
+                        print " " 
+                        res = check_result(moves)
+                        if(res == player):
+                            what_move[move] +=1;
+                        break;
+                else:
+                    move = r.choice(moves) # create better choice algorithm.
+                    make_move(i%2+1,move)
+
+    return max(what_move, key=what_move.get)
+#}}}

@@ -9,6 +9,7 @@ import glob
 import os
 from threading import Thread
 
+li = []
 def read_uart(s):
     while s.isOpen():
         try:
@@ -36,9 +37,17 @@ def send_input(s):
     while s.isOpen():
         try:
             read = sys.stdin.readline();
-            if read:
-                s.write(read)
+            if read[0] == "#" and len(read) == 2:
+                print "previous commands"
+                for i,o in enumerate(li):
+                    print i, o
+            elif read[0] == "#":
+                print li[int(read[1:-1])]
+                s.write(li[int(read[1:-1])])
+            else:
                 print read,
+                s.write(read)
+                li = [read] + li[:9]
         except (KeyboardInterrupt, SystemExit):
             print
             sys.exit(0)

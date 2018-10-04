@@ -6,22 +6,22 @@ unsigned i;
 int solution(int T[], int N)
 {
     unsigned walker = N;
+    indx = N-1;
 
     while (walker--) {
-    int max = T[0], min = T[N-1];
-        for (i = walker; i < N; i++){
-            if (min > T[i]){
-                min = T[i];
-            }
-        }
+        int max = T[0], min = T[N - 1];
 
-        for (i = 0; i < walker; i++){
-            if (T[i] > max){
+        for (i = 1 ; i < walker; i++) {
+            if (max < T[i])
                 max = T[i];
-            }
         }
 
-        if (!(min < max))
+        for (i = walker; i < N; i++) {
+            if (min > T[i])
+                min = T[i];
+        }
+
+        if (!(T[walker] < max) && !(min < T[walker]))
             indx = walker;
     }
 
@@ -30,7 +30,7 @@ int solution(int T[], int N)
 
 int main(int argc, char const *argv[])
 {
-   int T[7] = {-5, -5, -5, -42, 6, 6,-42, 12};
+    int T[8] = {-5, -5, -5, -42, 6, -5 , 6, 12};
     printf("sol: %d\n", solution(T, 8));
     return 0;
 }
